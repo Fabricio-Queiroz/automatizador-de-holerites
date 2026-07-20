@@ -59,3 +59,33 @@ def test_pdf_sem_competencia_vai_para_revisar(pasta_holerites, tmp_path):
     saida = str(tmp_path / "out")
     rel = processar(str(pasta_holerites), saida, "renomear_e_juntar")
     assert any(p.endswith("sem_comp.pdf") for p in rel.revisar_manualmente)
+
+
+def test_nao_destrutivo_com_saida_dentro_da_origem(pasta_holerites):
+    # Topologia REAL do app: a pasta de saida fica DENTRO da pasta de origem.
+    # Os originais devem continuar todos presentes; a unica coisa nova e a
+    # subpasta de saida (o pipeline nao deve reprocessar a propria saida).
+    originais = set(os.listdir(str(pasta_holerites)))
+    saida = os.path.join(str(pasta_holerites), "HOLERITES ORGANIZADOS")
+    processar(str(pasta_holerites), saida, "renomear_e_juntar")
+    depois = set(os.listdir(str(pasta_holerites)))
+    assert originais.issubset(depois)
+    assert depois - originais == {"HOLERITES ORGANIZADOS"}
+
+
+def test_conflito_mesma_competencia_conteudo_diferente(tmp_path):
+    # Dois holerites da MESMA competencia (2025-07) com conteudo diferente:
+    # ambos sao preservados, o segundo vira "2025-07 (2).pdf".
+    from tests.fixtures.gen import gerar_holerite
+    origem = tmp_path / "origem"
+    origem.mkdir()
+    gerar_holerite(str(origem / "a.pdf"), 2025, 7, "05/08/2025",
+                   "10/02/2022", "num", nome="FULANO A")
+    gerar_holerite(str(origem / "b.pdf"), 2025, 7, "05/08/2025",
+                   "10/02/2022", "num", nome="BELTRANO B")
+    saida = str(tmp_path / "out")
+    rel = processar(str(origem), saida, "renomear_e_juntar")
+    nomes = set(os.listdir(saida))
+    assert "2025-07.pdf" in nomes
+    assert "2025-07 (2).pdf" in nomes
+    assert len(rel.conflitos) == 1
