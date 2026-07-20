@@ -151,7 +151,7 @@ def gerar_holerite(path, ano, mes, pagamento, admissao,
 
 `tests/conftest.py`:
 ```python
-import os
+import shutil
 import pytest
 from tests.fixtures.gen import gerar_holerite
 
@@ -169,12 +169,15 @@ def pasta_holerites(tmp_path):
     ]
     for fn, m, a, pg, adm, st in jobs:
         gerar_holerite(str(tmp_path / fn), a, m, pg, adm, st)
-    # duplicado exato de aaa.pdf (mesmo conteudo, nome diferente)
-    gerar_holerite(str(tmp_path / "duplicado.pdf"), 2025, 8,
-                   "05/09/2025", "10/02/2022", "mesano")
+    # Duplicado byte-a-byte de aaa.pdf (copia real de arquivo, como no mundo real).
+    # NAO regerar com reportlab: cada render embute CreationDate/ID diferente,
+    # entao dois renders do "mesmo" holerite teriam MD5 diferente e o dedup
+    # (Task 4/6) nao os detectaria. A copia garante bytes identicos.
+    shutil.copy2(str(tmp_path / "aaa.pdf"), str(tmp_path / "duplicado.pdf"))
     return tmp_path
 ```
-> Nota: a assinatura de `gerar_holerite` é `(path, ano, mes, ...)`. Repare que o `jobs` acima lista `(fn, mes, ano, ...)` e é remapeado na chamada — mantenha a ordem `a, m` (ano, mês) exatamente como no `gerar_holerite(...)` do duplicado.
+> Nota 1: a assinatura de `gerar_holerite` é `(path, ano, mes, ...)`. O `jobs` acima lista `(fn, mes, ano, ...)` e é remapeado na chamada `gerar_holerite(..., a, m, ...)` — mantenha a ordem `a, m` (ano, mês) exatamente assim.
+> Nota 2: o duplicado é uma **cópia de arquivo** de `aaa.pdf`, não um novo render. Isso é proposital: só assim os bytes (e o MD5) batem, refletindo um duplicado real (arquivo copiado). Requer `tests/fixtures/__init__.py` para o import de `tests.fixtures.gen` funcionar.
 
 - [ ] **Step 5: Instalar dependências de desenvolvimento**
 
