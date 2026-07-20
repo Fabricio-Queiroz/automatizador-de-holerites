@@ -1,4 +1,4 @@
-import os
+import shutil
 import pytest
 from tests.fixtures.gen import gerar_holerite
 
@@ -16,7 +16,9 @@ def pasta_holerites(tmp_path):
     ]
     for fn, m, a, pg, adm, st in jobs:
         gerar_holerite(str(tmp_path / fn), a, m, pg, adm, st)
-    # duplicado exato de aaa.pdf (mesmo conteudo, nome diferente)
-    gerar_holerite(str(tmp_path / "duplicado.pdf"), 2025, 8,
-                   "05/09/2025", "10/02/2022", "mesano")
+    # Duplicado byte-a-byte de aaa.pdf (copia real de arquivo, como no mundo real).
+    # NAO regerar com reportlab: cada render embute CreationDate/ID diferente,
+    # entao dois renders do "mesmo" holerite teriam MD5 diferente e o dedup
+    # nao os detectaria. A copia garante bytes identicos.
+    shutil.copy2(str(tmp_path / "aaa.pdf"), str(tmp_path / "duplicado.pdf"))
     return tmp_path
