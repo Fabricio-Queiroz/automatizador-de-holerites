@@ -776,7 +776,6 @@ git commit -m "feat: pipeline nao-destrutivo (extrai, ordena, dedup, renomeia, j
 ```python
 import os
 import threading
-import tkinter as tk
 from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
@@ -883,7 +882,11 @@ Adicione dentro da classe:
         try:
             rel = processar(self.pasta_origem, saida, self.modo.get(), cb)
         except Exception as e:
-            self.after(0, lambda: self._erro(str(e)))
+            # Capturar a mensagem numa variavel local ANTES de agendar: o Python
+            # apaga o nome `e` ao sair do bloco except, e o lambda so roda depois
+            # (via self.after), o que causaria NameError.
+            msg = str(e)
+            self.after(0, lambda: self._erro(msg))
             return
         self.after(0, lambda: self._concluir(rel, saida))
 
