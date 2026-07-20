@@ -38,3 +38,22 @@ def test_pdf_sem_competencia_retorna_none(tmp_path):
     c.drawString(50, 50, "documento sem competencia aqui")
     c.save()
     assert extrair_competencia(p) is None
+
+
+def test_competencia_e_data_na_mesma_linha_nao_confunde(tmp_path):
+    # Rotulo de competencia e uma data dd/mm/aaaa (admissao) na MESMA linha extraida.
+    # Nao pode ler o dia/mes da admissao como competencia.
+    from reportlab.pdfgen import canvas
+    p = str(tmp_path / "mesma_linha.pdf")
+    c = canvas.Canvas(p)
+    y = 700
+    c.drawString(40, y, "Admissao: 10/02/2022")
+    c.drawString(260, y, "Competencia: 07/2025")
+    c.save()
+    assert extrair_competencia(p) == (2025, 7)
+
+
+def test_ocr_helper_nunca_levanta_em_caminho_invalido():
+    # OCR opcional: caminho invalido nunca pode lancar excecao; retorna "".
+    from core.extract import _ocr_primeira_pagina
+    assert _ocr_primeira_pagina("caminho/que/nao/existe.pdf") == ""
