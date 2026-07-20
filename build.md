@@ -11,6 +11,8 @@
 O executavel sai em `dist/`.
 
 ## OCR (opcional)
-O OCR so funciona se o Tesseract estiver instalado na maquina e no PATH,
-com o pacote de idioma `por`. Sem ele, PDFs escaneados vao para a lista
-"revisar manualmente" — o app nao trava.
+O app renderiza paginas escaneadas com `pypdfium2` (empacotado junto) e le o
+texto com `pytesseract`, que POR SUA VEZ EXIGE o motor Tesseract OCR
+instalado na maquina e no PATH, COM o pacote de idioma portugues (`por`).
+Sem o Tesseract instalado, PDFs escaneados vao para a lista "revisar
+manualmente" e o app nao trava.

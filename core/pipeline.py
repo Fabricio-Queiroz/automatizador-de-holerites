@@ -23,6 +23,9 @@ def processar(pasta_origem: str, pasta_saida: str, modo: str,
     pdfs = _listar_pdfs(pasta_origem)
     total = len(pdfs)
 
+    if total == 0:
+        return rel  # pasta sem PDFs: nao cria nada, pdf_final continua None
+
     itens = []          # (path, competencia)
     hashes_vistos = {}  # hash -> path ja aceito
 

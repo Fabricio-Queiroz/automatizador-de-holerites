@@ -12,13 +12,6 @@ def nome_arquivo_competencia(ano: int, mes: int) -> str:
 
 
 @dataclass
-class ResultadoArquivo:
-    origem: str
-    competencia: tuple[int, int] | None = None
-    hash: str | None = None
-
-
-@dataclass
 class Relatorio:
     organizados: list = field(default_factory=list)
     duplicados_ignorados: list = field(default_factory=list)

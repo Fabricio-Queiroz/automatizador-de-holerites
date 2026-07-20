@@ -112,6 +112,14 @@ class AppHolerites(ctk.CTk):
     def _concluir(self, rel, saida):
         self.progresso.set(1)
         self.btn.configure(state="normal")
+        if not rel.pdf_final:
+            self.progresso.set(0)
+            self.status.configure(text="Nenhum PDF encontrado na pasta.")
+            messagebox.showinfo(
+                "Nada a fazer",
+                "Nenhum PDF encontrado na pasta selecionada.",
+            )
+            return
         resumo = (
             f"Concluido!\n"
             f"{len(rel.organizados)} organizados  |  "

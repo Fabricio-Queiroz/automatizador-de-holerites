@@ -89,3 +89,14 @@ def test_conflito_mesma_competencia_conteudo_diferente(tmp_path):
     assert "2025-07.pdf" in nomes
     assert "2025-07 (2).pdf" in nomes
     assert len(rel.conflitos) == 1
+
+
+def test_pasta_vazia_nao_faz_nada(tmp_path):
+    # Pasta sem PDFs: nao cria pasta de saida nem PDF; relatorio vazio.
+    origem = tmp_path / "vazia"
+    origem.mkdir()
+    saida = str(tmp_path / "out")
+    rel = processar(str(origem), saida, "renomear_e_juntar")
+    assert rel.organizados == []
+    assert rel.pdf_final is None
+    assert not os.path.exists(saida)
