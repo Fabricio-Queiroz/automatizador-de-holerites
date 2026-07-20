@@ -23,3 +23,15 @@ def test_juntar_pula_pdf_ilegivel(tmp_path):
     total = juntar([bom, ruim], destino)
     assert total == 1
     assert len(PdfReader(destino).pages) == 1
+
+
+def test_juntar_pdf_ilegivel_no_inicio_nao_impede_os_bons(tmp_path):
+    # Um PDF ilegivel LOGO NO INICIO nao pode impedir os arquivos bons seguintes.
+    ruim = str(tmp_path / "ruim.pdf")
+    bom = str(tmp_path / "bom.pdf")
+    (tmp_path / "ruim.pdf").write_bytes(b"isso nao e um pdf")
+    gerar_holerite(bom, 2025, 7, "05/08/2025", "10/02/2022", "num")
+    destino = str(tmp_path / "final.pdf")
+    total = juntar([ruim, bom], destino)
+    assert total == 1
+    assert len(PdfReader(destino).pages) == 1
