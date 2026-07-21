@@ -53,6 +53,25 @@ def test_competencia_e_data_na_mesma_linha_nao_confunde(tmp_path):
     assert extrair_competencia(p) == (2025, 7)
 
 
+def test_extrai_competencia_do_nome_de_scan(tmp_path):
+    # Scans sem camada de texto ainda devem entrar na ordem correta.
+    p = str(tmp_path / "01-2012.pdf")
+    (tmp_path / "01-2012.pdf").write_bytes(b"scan")
+    assert extrair_competencia(p) == (2012, 1)
+
+
+def test_nome_do_arquivo_prevalece_sobre_data_do_conteudo(tmp_path):
+    p = str(tmp_path / "12-2012.pdf")
+    gerar_holerite(p, 2025, 7, "05/08/2025", "10/02/2022", "num")
+    assert extrair_competencia(p) == (2012, 12)
+
+
+def test_nome_com_varios_meses_usa_o_primeiro_mes(tmp_path):
+    p = str(tmp_path / "03 e 04-2001 (Início).pdf")
+    (tmp_path / "03 e 04-2001 (Início).pdf").write_bytes(b"scan")
+    assert extrair_competencia(p) == (2001, 3)
+
+
 def test_ocr_helper_nunca_levanta_em_caminho_invalido():
     # OCR opcional: caminho invalido nunca pode lancar excecao; retorna "".
     from core.extract import _ocr_primeira_pagina

@@ -1,6 +1,7 @@
 import os
 from pypdf import PdfReader
 from core.pipeline import processar
+from tests.fixtures.gen import gerar_holerite
 
 
 def _origem_intacta(pasta):
@@ -25,6 +26,26 @@ def test_ordena_por_competencia_e_gera_final(pasta_holerites, tmp_path):
     assert comps[-1] == (2025, 12)
     assert rel.pdf_final == os.path.join(saida, "HOLERITES COMPLETOS.pdf")
     assert os.path.exists(rel.pdf_final)
+
+
+def test_ordena_janeiro_a_dezembro_e_depois_avanca_o_ano(tmp_path):
+    origem = tmp_path / "origem"
+    origem.mkdir()
+    for ano, mes in [(2013, 1), (2012, 12), (2012, 1), (2013, 12)]:
+        gerar_holerite(
+            str(origem / f"{mes:02d}-{ano}.pdf"),
+            2025,
+            7,
+            "05/08/2025",
+            "10/02/2022",
+            "num",
+        )
+
+    rel = processar(str(origem), str(tmp_path / "out"), "somente_juntar")
+
+    assert [comp for _, comp in rel.organizados] == [
+        (2012, 1), (2012, 12), (2013, 1), (2013, 12)
+    ]
 
 
 def test_dedup_ignora_duplicado(pasta_holerites, tmp_path):

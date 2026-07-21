@@ -1,5 +1,6 @@
 import re
 import unicodedata
+from pathlib import Path
 
 import pdfplumber
 
@@ -9,6 +10,16 @@ _LABEL = re.compile(r"(compet|referenc|mes\s*/?\s*ano|mes\s+e\s+ano)", re.I)
 _NUM_MMYYYY = re.compile(r"(?<!\d)(?<!\d/)(0?[1-9]|1[0-2])\s*/\s*(20\d{2})(?!\d)")
 _NOME_ANO = re.compile(
     r"(" + "|".join(MESES_PT) + r")\s*(?:/|\s+de\s+)\s*(20\d{2})", re.I
+)
+_NOME_ARQUIVO_MM_ANO = re.compile(
+    r"(?<!\d)(0?[1-9]|1[0-2])"
+    r"(?:\s*(?:-|–|—|e)\s*(?:0?[1-9]|1[0-2]))*"
+    r"\s*[-/–—]\s*(20\d{2})(?!\d)",
+    re.I,
+)
+_NOME_ARQUIVO_ANO_MM = re.compile(
+    r"(?<!\d)(20\d{2})\s*[-/–—]\s*(0?[1-9]|1[0-2])(?!\d)",
+    re.I,
 )
 
 
@@ -59,7 +70,32 @@ def _procurar(ntexto: str) -> tuple[int, int] | None:
     return None
 
 
+def _competencia_no_nome(pdf_path: str) -> tuple[int, int] | None:
+    """Lê competência explícita em nomes como ``01-2012.pdf``.
+
+    Holerites digitalizados frequentemente não têm texto extraível. Nesses
+    casos, o nome dado ao arquivo é a única informação confiável disponível.
+    Em nomes com vários meses (ex.: ``03 e 04-2001``), usa-se o primeiro mês
+    para posicionar o documento na sequência cronológica.
+    """
+    nome = Path(pdf_path).stem
+    m = _NOME_ARQUIVO_MM_ANO.search(nome)
+    if m:
+        return (int(m.group(2)), int(m.group(1)))
+    m = _NOME_ARQUIVO_ANO_MM.search(nome)
+    if m:
+        return (int(m.group(1)), int(m.group(2)))
+    return None
+
+
 def extrair_competencia(pdf_path: str) -> tuple[int, int] | None:
+    # A pasta pode conter scans sem camada de texto. Quando o arquivo já foi
+    # nomeado com MM-AAAA, essa informação deve prevalecer sobre datas de
+    # admissão/pagamento encontradas no documento.
+    pelo_nome = _competencia_no_nome(pdf_path)
+    if pelo_nome is not None:
+        return pelo_nome
+
     texto = _texto_primeira_pagina(pdf_path)
     resultado = _procurar(normalizar(texto))
     if resultado is not None:

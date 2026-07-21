@@ -1,6 +1,7 @@
 import os
+import sys
 import threading
-from tkinter import filedialog, messagebox
+from tkinter import TclError, filedialog, messagebox
 
 import customtkinter as ctk
 
@@ -10,12 +11,23 @@ ctk.set_appearance_mode("system")
 ctk.set_default_color_theme("blue")
 
 
+def _caminho_recurso(relativo: str) -> str:
+    """Resolve recursos tanto no código-fonte quanto no executável PyInstaller."""
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.dirname(__file__)))
+    return os.path.join(base, relativo)
+
+
 class AppHolerites(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Automatizador de Holerites 2.0")
         self.geometry("560x520")
         self.minsize(520, 480)
+        try:
+            self.iconbitmap(_caminho_recurso(os.path.join("assets", "app-icon.ico")))
+        except TclError:
+            # O ícone não deve impedir o app de abrir em instalações incompletas.
+            pass
 
         self.pasta_origem = None
         self.modo = ctk.StringVar(value="renomear_e_juntar")

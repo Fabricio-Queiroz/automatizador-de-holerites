@@ -4,9 +4,10 @@
     pip install -r requirements-dev.txt
 
 ## Gerar o .exe
-    pyinstaller --onefile --windowed --name "automatizador_holerites 2.0" ^
-      --collect-all customtkinter ^
-      main.py
+    pyinstaller --noconfirm --clean "automatizador_holerites 2.0.spec"
+
+O arquivo `.spec` inclui o ícone e força a inclusão do Tcl/Tk, necessária
+quando o PyInstaller não detecta corretamente o `tkinter` instalado.
 
 O executavel sai em `dist/`.
 
