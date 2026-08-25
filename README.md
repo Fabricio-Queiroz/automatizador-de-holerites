@@ -3,7 +3,8 @@
 Junta holerites em PDF num arquivo unico e, opcionalmente, renomeia cada um.
 Os arquivos originais nunca sao apagados nem alterados.
 
-Nao e preciso instalar Python: baixe o `.exe` em
+Nao e preciso instalar Python. Os executaveis estao na pasta
+[`executaveis/`](executaveis) e tambem em
 [Releases](https://github.com/Fabricio-Queiroz/automatizador-de-holerites/releases).
 
 ## Qual versao baixar
